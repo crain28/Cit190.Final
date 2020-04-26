@@ -1,0 +1,77 @@
+body {
+    position: relative;
+    background-image:url("../media/arcade.png");
+    background-repeat:no-repeat;
+    background-size:50%;
+    background-position:top right;
+    background-color:gray;
+}
+h2 {
+    padding: 0px;
+    margin: 0px;
+}
+.navbar-brand{
+	font-size:1.6em;
+}	
+.navbar {
+    padding: .05%;
+    background-color: black;
+    color: white;
+    font-size: 1.25em;
+    border: 1px 1px black;
+}
+.navbar a:link {
+    color: silver;
+}
+.navbar a:visited {
+    color: rgba(247, 6, 6, 0.699);
+}
+.navbar a:hover {
+    color: rgb(14, 212, 238);
+    background-color: white;
+    transition: 1s;
+}
+.icon-bar {
+    color: darkgoldenrod;
+    background-color: white;
+}
+#Lesson1, #Lesson3{
+    color: rgb(0, 0, 0);
+    background-color: #00d9ff;
+    padding: 20px;
+    padding-left: 5%;
+	opacity:.8;
+}
+#Lesson2{
+    color: rgb(0, 238, 255);
+    background-size: cover;
+    background-color: teal;
+    padding: 20px;
+    padding-left: 5%;
+	opacity:.7;
+}
+section a:link, section a:visited {
+    color: black;
+    text-decoration: none;
+    border: 1px solid rgb(0, 0, 0);
+    border-radius: 10px;
+    background-color: rgb(122, 122, 122);
+    margin-top: 5px;
+    width: 200px;
+    height: 60px;
+    text-align: center;
+    vertical-align: middle;
+}
+section a:hover, section a:active {
+    color: rgb(11, 184, 161);
+    box-shadow: 1px 1px black;
+}
+article {
+    margin-top: 3%;
+    margin-left: 0px;
+}
+@media screen and (max-width: 700px) {
+article {
+    margin-top: 10%;
+}
+}

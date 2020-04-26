@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Puzzle Game</title>
+    <style>
+        body{
+            background-color: black;
+        }
+    </style>
+    <script>
+
+        const Difficulty = 6;
+        const PuzzleHover = 'green';
+
+        var _stage;
+        var _canvas;
+        var _image;
+        var _pieces;
+        var _puzzleWidth;
+        var _puzzleHeight;
+        var _pieceWidth;
+        var _pieceHeight;
+        var _currentPiece;
+        var _currentDropPiece;  
+        var _mouse;
+        
+        //Loading Image
+        function init(){
+            _image = new Image();
+            _image.addEventListener('load',Image, false);
+            _image.src = "media/mill.jpg";
+        }
+        // Image Difficult and Size 
+        function Image(e){
+            _pieceWidth = Math.floor(_image.width / Difficulty)
+            _pieceHeight = Math.floor(_image.height / Difficulty)
+            _puzzleWidth = _pieceWidth * Difficulty;
+            _puzzleHeight = _pieceHeight * Difficulty;
+            setCanvas();
+            initilizePuzzle();
+        }
+
+        //Canvas Details
+        function setCanvas(){
+            _canvas = document.getElementById('canvas');
+            _stage = _canvas.getContext('2d');
+            _canvas.width = _puzzleWidth;
+            _canvas.height = _puzzleHeight;
+            _canvas.style.border = "1px solid black";
+        }
+
+        //Image peices 
+        function initilizePuzzle(){
+            _pieces = [];
+            _mouse = {x:0,y:0};
+            _currentPiece = null;
+            _currentDropPiece = null;
+            _stage.drawImage(_image, 0, 0, _puzzleWidth, _puzzleHeight, 0, 0, _puzzleWidth, _puzzleHeight);
+            Title("Click to Start Puzzle");
+            makePieces();
+        }
+
+        // Text on puzzle
+        function Title(msg){
+            _stage.fillStyle = "green";
+            _stage.globalAlpha = .4;
+            _stage.fillRect(100,_puzzleHeight - 40,_puzzleWidth - 200,40);
+            _stage.fillStyle = "white";
+            _stage.globalAlpha = 1;
+            _stage.textAlign = "center";
+            _stage.textBaseline = "middle";
+            _stage.font = "20px Classic";
+            _stage.fillText(msg,_puzzleWidth / 2,_puzzleHeight - 20);
+        }
+
+        //peice size 
+        function makePieces(){
+            var i;
+            var piece;
+            var xPosition = 0;
+            var yPosition = 0;
+            for(i = 0;i < Difficulty * Difficulty;i++){
+                piece = {};
+                piece.sx = xPosition;
+                piece.sy = yPosition;
+                _pieces.push(piece);
+                xPosition += _pieceWidth;
+                if(xPosition >= _puzzleWidth){
+                    xPosition = 0;
+                    yPosition += _pieceHeight;
+                }
+            }
+            document.onmousedown = mixPuzzle;
+        }
+
+        // Mixing peices
+        function mixPuzzle(){
+            _pieces = Shuffle(_pieces);
+            _stage.clearRect(0,0,_puzzleWidth,_puzzleHeight);
+            var i;
+            var piece;
+            var xPosition = 0;
+            var yPosition = 0;
+            for(i = 0;i < _pieces.length;i++){
+                piece = _pieces[i];
+                piece.xPosition = xPosition;
+                piece.yPosition = yPosition;
+                _stage.drawImage(_image, piece.sx, piece.sy, _pieceWidth, _pieceHeight, xPosition, yPosition, _pieceWidth, _pieceHeight);
+                _stage.strokeRect(xPosition, yPosition, _pieceWidth,_pieceHeight);
+                xPosition += _pieceWidth;
+                if(xPosition >= _puzzleWidth){
+                    xPosition = 0;
+                    yPosition += _pieceHeight;
+                }
+            }
+            document.onmousedown = PuzzleClick;
+        }
+
+        // moving peices
+        function PuzzleClick(e){
+            if(e.layerX || e.layerX == 0){
+                _mouse.x = e.layerX - _canvas.offsetLeft;
+                _mouse.y = e.layerY - _canvas.offsetTop;
+            }
+            else if(e.offsetX || e.offsetX == 0){
+                _mouse.x = e.offsetX - _canvas.offsetLeft;
+                _mouse.y = e.offsetY - _canvas.offsetTop;
+            }
+            _currentPiece = checkPiece();
+            if(_currentPiece != null){
+                _stage.clearRect(_currentPiece.xPosition,_currentPiece.yPosition,_pieceWidth,_pieceHeight);
+                _stage.save();
+                _stage.globalAlpha = .9;
+                _stage.drawImage(_image, _currentPiece.sx, _currentPiece.sy, _pieceWidth, _pieceHeight, _mouse.x - (_pieceWidth / 2), _mouse.y - (_pieceHeight / 2), _pieceWidth, _pieceHeight);
+                _stage.restore();
+                document.onmousemove = Update;
+                document.onmouseup = dropPiece;
+            }
+        }
+
+        // check to if all peices are in the right place
+        function checkPiece(){
+            var i;
+            var piece;
+            for(i = 0;i < _pieces.length;i++){
+                piece = _pieces[i];
+                if(_mouse.x < piece.xPosition || _mouse.x > (piece.xPosition + _pieceWidth) || _mouse.y < piece.yPosition || _mouse.y > (piece.yPosition + _pieceHeight)){
+                    //PIECE NOT HIT
+                }
+                else{
+                    return piece;
+                }
+            }
+            return null;
+        }
+
+        // changing picture 
+        function Update(e){
+            _currentDropPiece = null;
+            if(e.layerX || e.layerX == 0){
+                _mouse.x = e.layerX - _canvas.offsetLeft;
+                _mouse.y = e.layerY - _canvas.offsetTop;
+            }
+            else if(e.offsetX || e.offsetX == 0){
+                _mouse.x = e.offsetX - _canvas.offsetLeft;
+                _mouse.y = e.offsetY - _canvas.offsetTop;
+            }
+            _stage.clearRect(0,0,_puzzleWidth,_puzzleHeight);
+
+            var i;
+            var piece;
+            for(i = 0;i < _pieces.length;i++){
+                piece = _pieces[i];
+                if(piece == _currentPiece){
+                    continue;
+                }
+                _stage.drawImage(_image, piece.sx, piece.sy, _pieceWidth, _pieceHeight, piece.xPosition, piece.yPosition, _pieceWidth, _pieceHeight);
+                _stage.strokeRect(piece.xPosition, piece.yPosition, _pieceWidth,_pieceHeight);
+                if(_currentDropPiece == null){
+                    if(_mouse.x < piece.xPosition || _mouse.x > (piece.xPosition + _pieceWidth) || _mouse.y < piece.yPosition || _mouse.y > (piece.yPosition + _pieceHeight)){
+                    }
+                    else{
+                        _currentDropPiece = piece;
+                        _stage.save();
+                        _stage.globalAlpha = .4;
+                        _stage.fillStyle = PuzzleHover;
+                        _stage.fillRect(_currentDropPiece.xPosition,_currentDropPiece.yPosition,_pieceWidth, _pieceHeight);
+                        _stage.restore();
+                    }
+                }
+            }
+            _stage.save();
+            _stage.globalAlpha = .6;
+            _stage.drawImage(_image, _currentPiece.sx, _currentPiece.sy, _pieceWidth, _pieceHeight, _mouse.x - (_pieceWidth / 2), _mouse.y - (_pieceHeight / 2), _pieceWidth, _pieceHeight);
+            _stage.restore();
+            _stage.strokeRect( _mouse.x - (_pieceWidth / 2), _mouse.y - (_pieceHeight / 2), _pieceWidth,_pieceHeight);
+        }
+
+        // piece dropped
+        function dropPiece(e){
+            document.onmousemove = null;
+            document.onmouseup = null;
+            if(_currentDropPiece != null){
+                var tmp = {xPosition:_currentPiece.xPosition,yPosition:_currentPiece.yPosition};
+                _currentPiece.xPosition = _currentDropPiece.xPosition;
+                _currentPiece.yPosition = _currentDropPiece.yPosition;
+                _currentDropPiece.xPosition = tmp.xPosition;
+                _currentDropPiece.yPosition = tmp.yPosition;
+            }
+            resetAndCheckWin();
+        }
+
+        // change back to normal picture
+        function resetAndCheckWin(){
+            _stage.clearRect(0,0,_puzzleWidth,_puzzleHeight);
+            var gameWin = true;
+            var i;
+            var piece;
+            for(i = 0;i < _pieces.length;i++){
+                piece = _pieces[i];
+                _stage.drawImage(_image, piece.sx, piece.sy, _pieceWidth, _pieceHeight, piece.xPosition, piece.yPosition, _pieceWidth, _pieceHeight);
+                _stage.strokeRect(piece.xPosition, piece.yPosition, _pieceWidth,_pieceHeight);
+                if(piece.xPosition != piece.sx || piece.yPosition != piece.sy){
+                    gameWin = false;
+                }
+            }
+            if(gameWin){
+                setTimeout(gameOver,500);
+            }
+        }
+
+        // Game won
+        function gameOver(){
+            document.onmousedown = null;
+            document.onmousemove = null;
+            document.onmouseup = null;
+            initilizePuzzle();
+        }
+
+        // Shuffle blocks
+        function Shuffle(o){
+            for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+            return o;
+        }
+    </script>
+</head>
+<body onload="init();">
+    <canvas id="canvas"></canvas>
+</body>
+
+</html>
